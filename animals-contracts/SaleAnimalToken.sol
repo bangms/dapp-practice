@@ -39,28 +39,43 @@ contract SaleAnimalToken {
         onSaleAnimalTokenArray.push(_animalTokenId); // 판매중인 토큰 아이디 배열에 넣어주기
     }
 
-    //
-    function purchaseAnimalToken(uint256 _animalTokenId) public payable {
+    // 구매함수
+    function purchaseAnimalToken(uint256 _animalTokenId) public payable { // payable 을 붙여야 실제로 돈이 왔다갔다하는 함수를 만들 수 있음
+        // animalTokenPrices mapping에 담겨있는 값 꺼내오기
         uint256 price = animalTokenPrices[_animalTokenId];
+        // 주인의 주소값 불러오기
         address animalTokenOnwer = mintAnimalTokenAddress.ownerOf(_animalTokenId);
 
+        // 가격이 0보다 큰 경우
         require(price > 0, "Animal token not sale.");
+        // msg.value 이 함수를 실행할 때 보내는 매틱의 양
         require(price <= msg.value, "Caller sent lower than price.");
+        // 주인이 아니어야 구입 가능
         require(animalTokenOnwer != msg.sender, "Caller is animal token owner.");
 
+        // 아래 코드를 위해서 함수 정의할 때 payable을 넣어주어야 함
+        // 토큰 주인에게 돈을 보내줌
         payable(animalTokenOnwer).transfer(msg.value);
+        // nft를 보내줌 // 보내는 사람, 받는 사람, 토큰 아이디
         mintAnimalTokenAddress.safeTransferFrom(animalTokenOnwer, msg.sender, _animalTokenId);
 
+        // animalTokenPrices mapping 에서 해당 토큰 제거
         animalTokenPrices[_animalTokenId] = 0;
 
+        // onSaleAnimalTokenArray 에서 해당 토큰 제거
         for(uint256 i = 0; i < onSaleAnimalTokenArray.length; i++) {
+            // 위에서 animalTokenPrices에 있는 해당 토큰의 가격을 0으로 초기화 시킴
+            // onSaleAnimalTokenArray에서 가격이 0인 토큰을 찾는 것
             if(animalTokenPrices[onSaleAnimalTokenArray[i]] == 0) {
+                // 현재 0원인 토큰과 맨뒤의 토큰을 교체하고 맨뒤의 토큰을 삭제
                 onSaleAnimalTokenArray[i] = onSaleAnimalTokenArray[onSaleAnimalTokenArray.length - 1];
                 onSaleAnimalTokenArray.pop();
             }
         }
     }
 
+    // 판매중인 토큰 배열의 길이를 출력하는 함수
+    // view 읽기 전용 // return 값이 있는 함수
     function getOnSaleAnimalTokenArrayLength() view public returns (uint256) {
         return onSaleAnimalTokenArray.length;
     }
