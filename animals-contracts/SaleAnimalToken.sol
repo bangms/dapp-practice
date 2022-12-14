@@ -39,6 +39,7 @@ contract SaleAnimalToken {
         onSaleAnimalTokenArray.push(_animalTokenId); // 판매중인 토큰 아이디 배열에 넣어주기
     }
 
+    //
     function purchaseAnimalToken(uint256 _animalTokenId) public payable {
         uint256 price = animalTokenPrices[_animalTokenId];
         address animalTokenOnwer = mintAnimalTokenAddress.ownerOf(_animalTokenId);
